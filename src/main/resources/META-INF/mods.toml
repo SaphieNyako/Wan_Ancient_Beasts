@@ -1,0 +1,24 @@
+modLoader="javafml"
+loaderVersion="[45,)"
+license="All rights reserved"
+[[mods]]
+modId="wan_ancient_beasts"
+version="${file.jarVersion}"
+displayName="Wan Ancient Beasts"
+logoFile="wan_ancient_beasts_logo.png"
+credits="Thanks to the Wan Mine community"
+authors="Wanmine Studio"
+description="Wan Ancient Beasts Mod"
+[[dependencies.wan_ancient_beasts]]
+    modId="forge"
+    mandatory=true
+    versionRange="[46,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.wan_ancient_beasts]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20,1.21)"
+    ordering="NONE"
+    side="BOTH"
