@@ -25,13 +25,20 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import software.bernie.geckolib.GeckoLib;
 
+import javax.annotation.Nonnull;
+
 @Mod(WanAncientBeastsMod.MOD_ID)
 public class WanAncientBeastsMod {
 
     public static final String MOD_ID = "wan_ancient_beasts";
+    private static WanAncientBeastsMod instance;
 
     public WanAncientBeastsMod(){
-      GeckoLib.initialize();
+
+        instance = this;
+
+        GeckoLib.initialize();
+
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         eventBus.addListener(this::setup);
@@ -41,6 +48,15 @@ public class WanAncientBeastsMod {
         ModItems.ITEMS.register(eventBus);
         ModItems.TABS.register(eventBus);
         ModEntities.ENTITIES.register(eventBus);
+    }
+
+    @Nonnull
+    public static WanAncientBeastsMod getInstance(){
+        return instance;
+    }
+
+    public final ResourceLocation resource(String path) {
+        return new ResourceLocation(WanAncientBeastsMod.MOD_ID, path);
     }
 
     protected void setup(FMLCommonSetupEvent event) {

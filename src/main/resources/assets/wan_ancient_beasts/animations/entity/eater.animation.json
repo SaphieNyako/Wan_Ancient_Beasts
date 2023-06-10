@@ -1208,7 +1208,7 @@
 				}
 			}
 		},
-		"bite": {
+		"attack.bite": {
 			"animation_length": 1,
 			"bones": {
 				"head": {

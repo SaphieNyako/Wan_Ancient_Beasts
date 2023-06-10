@@ -12,7 +12,7 @@ public class ModEntities {
 
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, WanAncientBeastsMod.MOD_ID);
 
-    public static final RegistryObject<EntityType<Eater>> EATER = registerMob("eater", Eater::new, 2.0f, 2.0f);
+    public static final RegistryObject<EntityType<Eater>> EATER = registerMob("eater", Eater::new, 3.0f, 3.0f);
 
 
     public static <T extends Mob> RegistryObject<EntityType<T>> registerMob(String name, EntityType.EntityFactory<T> entity, float width, float height) {
