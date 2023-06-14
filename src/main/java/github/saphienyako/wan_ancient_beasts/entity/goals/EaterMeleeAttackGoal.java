@@ -4,6 +4,9 @@ import github.saphienyako.wan_ancient_beasts.entity.Eater;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import javax.annotation.Nonnull;
 
@@ -44,6 +47,15 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
         if (distanceToEnemySqr <= d0 + 4 && getTicksUntilNextAttack() <= 0) {
             this.resetAttackCooldown();
             this.mob.doHurtTarget(enemy);
+            //remove shield on impact
+            if (enemy instanceof Player player) {
+
+                for (int k = 0; k < player.getInventory().offhand.size(); ++k) {
+                    if (!player.getInventory().offhand.get(k).isEmpty() && player.getInventory().offhand.get(k).getItem() == Items.SHIELD) {
+                        player.getInventory().offhand.get(k).shrink(1);
+                    }
+                }
+            }
         }
     }
 
