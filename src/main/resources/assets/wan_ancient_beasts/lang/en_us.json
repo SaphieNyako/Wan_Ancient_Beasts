@@ -1,3 +1,6 @@
 {
-  "entity.wan_ancient_beasts.eater": "Eater"
+  "entity.wan_ancient_beasts.eater": "Eater",
+  "item.wan_ancient_beasts.eater_spawn_egg": "Eater Spawn Egg",
+  "item.wan_ancient_beasts.eater_tooth": "Eater Tooth",
+  "itemGroup.wan_ancient_beasts.items": "Wan Ancient Beasts"
 }

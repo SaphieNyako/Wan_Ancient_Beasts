@@ -3,12 +3,14 @@ package github.saphienyako.wan_ancient_beasts.entity;
 import github.saphienyako.wan_ancient_beasts.entity.goals.EaterAttackPlayerGoal;
 import github.saphienyako.wan_ancient_beasts.entity.goals.EaterMeleeAttackGoal;
 import github.saphienyako.wan_ancient_beasts.entity.goals.RoarFirstGoal;
+import github.saphienyako.wan_ancient_beasts.item.ModItems;
 import github.saphienyako.wan_ancient_beasts.tags.ModItemTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -27,6 +29,9 @@ import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -39,6 +44,8 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class Eater extends Animal implements GeoEntity, NeutralMob {
@@ -50,18 +57,13 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
     private static final RawAnimation START_SLEEP = RawAnimation.begin().thenPlay("start_sleep");
     private static final RawAnimation WAKE_UP = RawAnimation.begin().thenPlay("wake_up");
     private static final RawAnimation ROAR = RawAnimation.begin().thenPlay("roar");
-
-
-
-
-
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    //STATE ROAR
-   // public static final EntityDataAccessor<Boolean> ANGRY = SynchedEntityData.defineId(Eater.class, EntityDataSerializers.BOOLEAN);
+
     public static final EntityDataAccessor<Boolean> ROARED = SynchedEntityData.defineId(Eater.class, EntityDataSerializers.BOOLEAN);
 
     protected Eater(EntityType<? extends Animal> animal, Level level) {
         super(animal, level);
+        if(!level.isClientSide) MinecraftForge.EVENT_BUS.register(this);
     }
 
     public static AttributeSupplier.Builder getDefaultAttributes() {
@@ -222,6 +224,17 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
     @Override
     public void startPersistentAngerTimer() {
 
+    }
+
+    @SubscribeEvent
+    public void dropTooth(LivingDeathEvent event){
+        if (event.getSource().getEntity() == this) {
+            Random random = new Random();
+            //TODO lower to 2%
+            if(random.nextInt(99) < 40) {
+                spawnAtLocation(ModItems.EATER_TOOTH.get());
+            }
+        }
     }
 
     public enum State {
