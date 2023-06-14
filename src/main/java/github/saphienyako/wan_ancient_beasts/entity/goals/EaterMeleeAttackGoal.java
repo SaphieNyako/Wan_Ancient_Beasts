@@ -10,10 +10,32 @@ import javax.annotation.Nonnull;
 public class EaterMeleeAttackGoal extends MeleeAttackGoal {
 
     protected final Eater entity;
+    private int ticksLeft = 0;
+    //TODO chumb down and then do damage
 
     public EaterMeleeAttackGoal(Eater entity, double speedModifier, boolean followingTargetEvenIfNotSeen) {
         super(entity, speedModifier, followingTargetEvenIfNotSeen);
         this.entity = entity;
+    }
+
+    @Override
+    public void tick() {
+        if(this.ticksLeft > 0) {
+            this.ticksLeft--;
+            if(this.ticksLeft <= 0){
+                reset();
+            } else if(this.ticksLeft == 10) {
+                //TODO play sound
+                LivingEntity livingentity = this.mob.getTarget();
+                if (livingentity != null) {
+                    this.mob.getLookControl().setLookAt(livingentity, 30.0F, 30.0F);
+                    double d0 = this.mob.getPerceivedTargetDistanceSquareForMeleeAttack(livingentity);
+                    this.checkAndPerformAttack(livingentity, d0);
+                }
+            } else if(this.ticksLeft == 25) {
+                this.entity.setState(Eater.State.BITE);
+            }
+        }
     }
 
     @Override
@@ -27,7 +49,24 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
 
     @Override
     public void start() {
-        //TODO play sound
-        super.start();
+        this.ticksLeft = 30;
+        this.entity.setState(Eater.State.IDLE);
+        super.start(); //move to target
+    }
+
+    private void reset(){
+        this.entity.setState(Eater.State.IDLE);
+        this.ticksLeft = -1;
+    }
+
+    @Override
+    public boolean canContinueToUse() {
+        return this.ticksLeft > 0 && super.canContinueToUse();
+    }
+
+    @Override
+    public void stop() {
+        this.entity.setState(Eater.State.IDLE);
+        super.stop();
     }
 }

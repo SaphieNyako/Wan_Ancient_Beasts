@@ -28,14 +28,14 @@ public class RoarFirstGoal extends NearestAttackableTargetGoal<Player> {
                 reset();
             }
             else if( this.ticksLeft == 40){
-                this.entity.setAngry(true);
+                this.entity.setState(Eater.State.ROAR);
             }
         }
     }
 
     private void reset() {
         this.ticksLeft = -1;
-        this.entity.setAngry(false);
+        this.entity.setState(Eater.State.IDLE);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class RoarFirstGoal extends NearestAttackableTargetGoal<Player> {
         //same as AttackPlayer Goal
             if (!entity.isBaby()) {
                 if (super.canUse()) {
-                    for (Eater eater : entity.level().getEntitiesOfClass(Eater.class, entity.getBoundingBox().inflate(8.0D, 4.0D, 8.0D))) {
+                    for (Eater eater : entity.level().getEntitiesOfClass(Eater.class, entity.getBoundingBox().inflate(16.0D, 8.0D, 16.0D))) {
                         if (eater.isBaby()) {
                             return true;
                         }
