@@ -5,6 +5,8 @@ plugins {
     id 'org.spongepowered.mixin' version '0.7.+'
 }
 
+apply plugin: 'org.spongepowered.mixin'
+
 version = mod_version
 group = mod_group
 archivesBaseName = mod_id
@@ -86,13 +88,13 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
 }
 
 dependencies {
-
     minecraft 'net.minecraftforge:forge:1.20-46.0.1'
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20:4.2")
-
+    implementation('org.spongepowered:mixingradle:0.7.+')
 }
 
 jar {
@@ -104,9 +106,15 @@ jar {
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
                 "Implementation-Vendor"   : "mod_authors",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "MixinConfigs": "wan_ancient_beasts.mixin.json"
         ])
     }
+}
+
+mixin {
+    add sourceSets.main, "wan_ancient_beasts.refmap.json"
+    config 'wan_ancient_beasts.mixin.json'
 }
 
 jar.finalizedBy('reobfJar')

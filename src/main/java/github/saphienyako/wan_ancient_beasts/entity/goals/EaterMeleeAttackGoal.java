@@ -2,10 +2,8 @@ package github.saphienyako.wan_ancient_beasts.entity.goals;
 
 import github.saphienyako.wan_ancient_beasts.entity.Eater;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import javax.annotation.Nonnull;
@@ -14,7 +12,6 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
 
     protected final Eater entity;
     private int ticksLeft = 0;
-    //TODO chumb down and then do damage
 
     public EaterMeleeAttackGoal(Eater entity, double speedModifier, boolean followingTargetEvenIfNotSeen) {
         super(entity, speedModifier, followingTargetEvenIfNotSeen);
@@ -63,10 +60,12 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
     public void start() {
         this.ticksLeft = 30;
         this.entity.setState(Eater.State.IDLE);
+        this.entity.setRunning(true);
         super.start(); //move to target
     }
 
     private void reset(){
+        this.entity.setRunning(false);
         this.entity.setState(Eater.State.IDLE);
         this.ticksLeft = -1;
     }
@@ -78,6 +77,7 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
 
     @Override
     public void stop() {
+        this.entity.setRunning(false);
         this.entity.setState(Eater.State.IDLE);
         super.stop();
     }

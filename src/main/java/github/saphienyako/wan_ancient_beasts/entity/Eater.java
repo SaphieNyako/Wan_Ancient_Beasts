@@ -10,7 +10,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -44,7 +43,6 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -53,6 +51,7 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
     //Eater animation can't be used in a different STATE
     public static final EntityDataAccessor<Integer> STATE = SynchedEntityData.defineId(Eater.class, EntityDataSerializers.INT);
     private static final RawAnimation BITE = RawAnimation.begin().thenPlay("bite");
+    private static final RawAnimation RUN = RawAnimation.begin().thenLoop("run");
     private static final RawAnimation SLEEP = RawAnimation.begin().thenLoop("sleep");
     private static final RawAnimation START_SLEEP = RawAnimation.begin().thenPlay("start_sleep");
     private static final RawAnimation WAKE_UP = RawAnimation.begin().thenPlay("wake_up");
@@ -60,6 +59,7 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public static final EntityDataAccessor<Boolean> ROARED = SynchedEntityData.defineId(Eater.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> RUNNING = SynchedEntityData.defineId(Eater.class, EntityDataSerializers.BOOLEAN);
 
     protected Eater(EntityType<? extends Animal> animal, Level level) {
         super(animal, level);
@@ -86,6 +86,7 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
         super.defineSynchedData();
        // this.entityData.define(ANGRY, false);
         this.entityData.define(ROARED, false);
+        this.entityData.define(RUNNING, false);
         this.entityData.define(STATE, 0);
     }
 
@@ -103,7 +104,7 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         this.goalSelector.addGoal(2, new BreedGoal(this, 0.5D));
         //roar first
-        this.targetSelector.addGoal(2, new RoarFirstGoal(this, Player.class, true));
+        this.targetSelector.addGoal(5, new RoarFirstGoal(this, Player.class, true));
         //target
         this.targetSelector.addGoal(2, new EaterAttackPlayerGoal(this, Player.class, true));
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true, (entity) -> {
@@ -137,10 +138,6 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
         }
     }
 
-   // public boolean getAngry(){return this.entityData.get(ANGRY);}
-
-    //public void setAngry(boolean angry){this.entityData.set(ANGRY, angry);}
-
     public Eater.State getState(){
         Eater.State[] states = Eater.State.values();
         return states[Mth.clamp(this.entityData.get(STATE), 0, states.length -1)];
@@ -151,6 +148,10 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
     public boolean getRoared(){return this.entityData.get(ROARED);}
 
     public void setRoared(boolean roared){this.entityData.set(ROARED, roared);}
+
+    public boolean getRunning(){return this.entityData.get(RUNNING);}
+
+    public void setRunning(boolean running){this.entityData.set(RUNNING, running);}
 
     @NotNull
     @Override
@@ -164,8 +165,8 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controller) {
-       controller.add(DefaultAnimations.genericWalkIdleController(this));
-      // controller.add(eaterAttackAnimation(this, DefaultAnimations.ATTACK_BITE));
+        controller.add(DefaultAnimations.genericWalkIdleController(this));
+       controller.add(eaterRunAnimation(this, RUN));
        controller.add(
                addAnimation(BITE, State.BITE),
                addAnimation(ROAR, State.ROAR),
@@ -174,6 +175,19 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
                addAnimation(WAKE_UP, State.WAKE_UP)
        );
     }
+
+    public static <T extends LivingEntity & GeoAnimatable> AnimationController<T> eaterRunAnimation(T entity, RawAnimation runAnimation) {
+        return new AnimationController<>(entity, "run", 1, state -> {
+            if (entity instanceof Eater eater && eater.getRunning())
+                return state.setAndContinue(runAnimation);
+
+            state.getController().forceAnimationReset();
+
+            return PlayState.STOP;
+        });
+    }
+
+
 
     private <T extends LivingEntity & GeoAnimatable> AnimationController<?> addAnimation(RawAnimation animation, State animationState) {
         return new AnimationController<>(this, animation.toString(), 0, state -> {
@@ -189,16 +203,7 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
         return cache;
     }
 
-    public static <T extends LivingEntity & GeoAnimatable> AnimationController<T> eaterAttackAnimation(T entity, RawAnimation attackAnimation) {
-        return new AnimationController<>(entity, "attack.bite", 1, state -> {
-            if (entity instanceof Eater eater && eater.isAggressive())
-                return state.setAndContinue(attackAnimation);
 
-            state.getController().forceAnimationReset();
-
-            return PlayState.STOP;
-        });
-    }
 
     @Override
     public int getRemainingPersistentAngerTime() {
@@ -238,6 +243,6 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
     }
 
     public enum State {
-        IDLE, WALK, RUN, ROAR, BITE, START_SLEEP, SLEEP, WAKE_UP
+        IDLE, WALK, ROAR, BITE, START_SLEEP, SLEEP, WAKE_UP
     }
 }
