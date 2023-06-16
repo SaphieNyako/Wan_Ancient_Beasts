@@ -1,8 +1,6 @@
 package github.saphienyako.wan_ancient_beasts.entity;
 
-import github.saphienyako.wan_ancient_beasts.entity.goals.EaterAttackPlayerGoal;
-import github.saphienyako.wan_ancient_beasts.entity.goals.EaterMeleeAttackGoal;
-import github.saphienyako.wan_ancient_beasts.entity.goals.RoarFirstGoal;
+import github.saphienyako.wan_ancient_beasts.entity.goals.*;
 import github.saphienyako.wan_ancient_beasts.item.ModItems;
 import github.saphienyako.wan_ancient_beasts.tags.ModItemTags;
 import net.minecraft.core.BlockPos;
@@ -29,6 +27,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.jetbrains.annotations.NotNull;
@@ -60,6 +60,9 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
 
     public static final EntityDataAccessor<Boolean> ROARED = SynchedEntityData.defineId(Eater.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> RUNNING = SynchedEntityData.defineId(Eater.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> NOM_COUNT = SynchedEntityData.defineId(Eater.class, EntityDataSerializers.INT);
+    private final int NOM_COUNTER = 5;
+ //   int sleepcounter = 0;
 
     protected Eater(EntityType<? extends Animal> animal, Level level) {
         super(animal, level);
@@ -88,6 +91,7 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
         this.entityData.define(ROARED, false);
         this.entityData.define(RUNNING, false);
         this.entityData.define(STATE, 0);
+        this.entityData.define(NOM_COUNT, 0);
     }
 
     @Override
@@ -98,30 +102,34 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
     @Override
     protected void registerGoals() {
         super.registerGoals();
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 0.4D));
-        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(2, new BreedGoal(this, 0.5D));
-        //roar first
-        this.targetSelector.addGoal(5, new RoarFirstGoal(this, Player.class, true));
-        //target
-        this.targetSelector.addGoal(2, new EaterAttackPlayerGoal(this, Player.class, true));
-        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true, (entity) -> {
-            return !entity.isBaby();
-        }));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Raider.class, false, false));
-        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, Animal.class, true, (entity) -> {
-            return !(entity instanceof Eater);
-        }));
-        //TODO attack crusher and charger
-        this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
-        //move
-        this.goalSelector.addGoal(2, new MoveTowardsTargetGoal(this, 0.1f, 16));
-        //attack in range
-        this.goalSelector.addGoal(1, new EaterMeleeAttackGoal(this, 1.0f, true));
-        //reset
-        this.targetSelector.addGoal(5, new ResetUniversalAngerTargetGoal<>(this, false));
+        if(this.getNomCount() < 10) {
+            this.goalSelector.addGoal(0, new SleepingCheckGoal(this,new FloatGoal(this)));
+            this.goalSelector.addGoal(3, new SleepingCheckGoal(this,new WaterAvoidingRandomStrollGoal(this, 0.4D)));
+            this.goalSelector.addGoal(6, new SleepingCheckGoal(this,new LookAtPlayerGoal(this, Player.class, 6.0F)));
+            this.goalSelector.addGoal(7, new SleepingCheckGoal(this,new RandomLookAroundGoal(this)));
+            this.goalSelector.addGoal(2, new SleepingCheckGoal(this,new BreedGoal(this, 0.5D)));
+            //roar first
+            this.goalSelector.addGoal(5, new SleepingCheckGoal(this,new RoarFirstGoal(this, Player.class, true)));
+            //target
+            this.goalSelector.addGoal(2, new SleepingCheckGoal(this,new EaterAttackPlayerGoal(this, Player.class, true)));
+            this.goalSelector.addGoal(4, new SleepingCheckGoal(this,new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true, (entity) -> {
+                return !entity.isBaby();
+            })));
+            this.goalSelector.addGoal(2, new SleepingCheckGoal(this,new NearestAttackableTargetGoal<>(this, Raider.class, false, false)));
+            this.goalSelector.addGoal(4, new SleepingCheckGoal(this,new NearestAttackableTargetGoal<>(this, Animal.class, true, (entity) -> {
+                return !(entity instanceof Eater);
+            })));
+            //TODO attack crusher and charger
+            this.goalSelector.addGoal(2, new SleepingCheckGoal(this,new HurtByTargetGoal(this)));
+            //move
+            this.goalSelector.addGoal(2, new SleepingCheckGoal(this,new MoveTowardsTargetGoal(this, 0.1f, 16)));
+            //attack in range
+            this.goalSelector.addGoal(1, new SleepingCheckGoal(this,new EaterMeleeAttackGoal(this, 1.3f, false)));
+            //reset
+            this.goalSelector.addGoal(5, new SleepingCheckGoal(this,new ResetUniversalAngerTargetGoal<>(this, false)));
+            //sleep
+            this.goalSelector.addGoal(5, new EaterSleepingGoal(this));
+        }
     }
 
     @Nullable
@@ -152,6 +160,14 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
     public boolean getRunning(){return this.entityData.get(RUNNING);}
 
     public void setRunning(boolean running){this.entityData.set(RUNNING, running);}
+
+    public void increaseNomCount(){ this.setNomCount(getNomCount()+ 1);}
+
+    public void setNomCount(int nomCount){this.entityData.set(NOM_COUNT, nomCount);}
+
+    public int getNomCount(){return this.entityData.get(NOM_COUNT);}
+
+    public boolean shouldBeSleeping(){return this.getNomCount() > NOM_COUNTER;}
 
     @NotNull
     @Override
@@ -186,7 +202,6 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
             return PlayState.STOP;
         });
     }
-
 
 
     private <T extends LivingEntity & GeoAnimatable> AnimationController<?> addAnimation(RawAnimation animation, State animationState) {
@@ -236,11 +251,20 @@ public class Eater extends Animal implements GeoEntity, NeutralMob {
         if (event.getSource().getEntity() == this) {
             Random random = new Random();
             //TODO lower to 2%
-            if(random.nextInt(99) < 40) {
+            if(random.nextInt(99) < 10) {
                 spawnAtLocation(ModItems.EATER_TOOTH.get());
             }
+            this.increaseNomCount();
         }
     }
+
+    @SubscribeEvent
+    public void wakeUp(LivingDamageEvent event){
+        if(this.shouldBeSleeping()){
+            this.setNomCount(0);
+        }
+    }
+
 
     public enum State {
         IDLE, WALK, ROAR, BITE, START_SLEEP, SLEEP, WAKE_UP

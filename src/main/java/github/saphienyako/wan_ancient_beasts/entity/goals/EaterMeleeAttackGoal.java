@@ -24,7 +24,7 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
             this.ticksLeft--;
             if(this.ticksLeft <= 0){
                 reset();
-            } else if(this.ticksLeft == 10) {
+            } else if(this.ticksLeft == 5) {
                 //TODO play sound
                 LivingEntity livingentity = this.mob.getTarget();
                 if (livingentity != null) {
@@ -32,7 +32,7 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
                     double d0 = this.mob.getPerceivedTargetDistanceSquareForMeleeAttack(livingentity);
                     this.checkAndPerformAttack(livingentity, d0);
                 }
-            } else if(this.ticksLeft == 25) {
+            } else if(this.ticksLeft == 10) {
                 this.entity.setState(Eater.State.BITE);
             }
         }
@@ -41,7 +41,7 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
     @Override
     protected void checkAndPerformAttack(@Nonnull LivingEntity enemy, double distanceToEnemySqr) {
         double d0 = this.getAttackReachSqr(enemy);
-        if (distanceToEnemySqr <= d0 + 4 && getTicksUntilNextAttack() <= 0) {
+        if (getTicksUntilNextAttack() <= 0) {
             this.resetAttackCooldown();
             this.mob.doHurtTarget(enemy);
             //remove shield on impact
@@ -58,9 +58,10 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
 
     @Override
     public void start() {
-        this.ticksLeft = 30;
+        this.ticksLeft = 15;
         this.entity.setState(Eater.State.IDLE);
         this.entity.setRunning(true);
+        this.entity.absMoveTo(this.entity.position().x, this.entity.position().y + 1, this.entity.position().z);
         super.start(); //move to target
     }
 
@@ -78,7 +79,7 @@ public class EaterMeleeAttackGoal extends MeleeAttackGoal {
     @Override
     public void stop() {
         this.entity.setRunning(false);
-        this.entity.setState(Eater.State.IDLE);
+       // this.entity.setState(Eater.State.IDLE);
         super.stop();
     }
 }

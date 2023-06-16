@@ -17,6 +17,6 @@ public abstract class MixinSniffer extends Animal {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Eater.class, 16.0F, 1.5D, 1.6D));
+        this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Eater.class, 12.0F, 1.5D, 1.6D));
     }
 }

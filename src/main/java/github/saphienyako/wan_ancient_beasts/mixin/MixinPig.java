@@ -20,6 +20,6 @@ public abstract class MixinPig extends Animal {
 
     @Inject(at=@At("HEAD"), method = "registerGoals()V", cancellable = false)
     protected void registerGoals(CallbackInfo ci) {
-        this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Eater.class, 16.0F, 1.5D, 1.6D));
+        this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Eater.class, 12.0F, 1.1D, 1.2D));
     }
 }

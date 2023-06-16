@@ -19,6 +19,6 @@ public abstract class MixinChicken extends Animal {
 
     @Inject(at=@At("HEAD"), method = "registerGoals()V", cancellable = false)
     protected void registerGoals(CallbackInfo ci) {
-        this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Eater.class, 16.0F, 2.0D, 2.0D));
+        this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Eater.class, 12.0F, 2.0D, 2.0D));
     }
 }

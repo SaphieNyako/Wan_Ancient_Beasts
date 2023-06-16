@@ -14,7 +14,6 @@ public class ModEntities {
 
     public static final RegistryObject<EntityType<Eater>> EATER = registerMob("eater", Eater::new, 3.0f, 3.0f);
 
-
     public static <T extends Mob> RegistryObject<EntityType<T>> registerMob(String name, EntityType.EntityFactory<T> entity, float width, float height) {
         RegistryObject<EntityType<T>> entityType = ENTITIES.register(name,
                 () -> EntityType.Builder.of(entity, MobCategory.CREATURE).sized(width, height).build(name));
