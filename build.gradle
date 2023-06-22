@@ -1,21 +1,32 @@
+buildscript {
+    repositories {
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
 plugins {
-    id 'eclipse'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '5.1.+'
-    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
 apply plugin: 'org.spongepowered.mixin'
 
-version = mod_version
-group = mod_group
-archivesBaseName = mod_id
+group = "${mod_group}"
+version = "${mod_version}"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java {
+    archivesBaseName = "${mod_name}"
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
 
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
-    mappings channel: 'official', version: '1.20'
+    mappings channel: "${mappings_channel}", version: "${mappings_version}"
+
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
@@ -25,10 +36,10 @@ minecraft {
 
             property 'forge.logging.console.level', 'debug'
 
-            property 'forge.enabledGameTestNamespaces', 'mod_id'
+            property 'forge.enabledGameTestNamespaces', "${mod_id}"
 
             mods {
-                examplemod {
+                eternalmagic {
                     source sourceSets.main
                 }
             }
@@ -41,10 +52,10 @@ minecraft {
 
             property 'forge.logging.console.level', 'debug'
 
-            property 'forge.enabledGameTestNamespaces', 'mod_id'
+            property 'forge.enabledGameTestNamespaces', "${mod_id}"
 
             mods {
-                examplemod {
+                eternalmagic {
                     source sourceSets.main
                 }
             }
@@ -57,10 +68,10 @@ minecraft {
 
             property 'forge.logging.console.level', 'debug'
 
-            property 'forge.enabledGameTestNamespaces', 'mod_id'
+            property 'forge.enabledGameTestNamespaces', "${mod_id}"
 
             mods {
-                examplemod {
+                eternalmagic {
                     source sourceSets.main
                 }
             }
@@ -73,10 +84,10 @@ minecraft {
 
             property 'forge.logging.console.level', 'debug'
 
-            args '--mod', 'mod_id', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', "${mod_id}", '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
-                "wan_ancient_beasts" {
+                eternalmagic {
                     source sourceSets.main
                 }
             }
@@ -84,54 +95,45 @@ minecraft {
     }
 }
 
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+
+    config "${mod_id}.mixins.json"
+}
+
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
-    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+
+    // flatDir {
+    //     dir 'libs'
+    // }
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.20-46.0.1'
-    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20:4.2")
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    implementation('org.spongepowered:mixingradle:0.7.+')
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${gl_mc_version}:${gl_version}")
+
+    annotationProcessor "org.spongepowered:mixin:${mixin_processor_version}:processor"
 }
 
 jar {
     manifest {
         attributes([
-                "Specification-Title"     : "mod_ id",
-                "Specification-Vendor"    : "mod_authors",
-                "Specification-Version"   : "1",
-                "Implementation-Title"    : project.name,
-                "Implementation-Version"  : project.jar.archiveVersion,
-                "Implementation-Vendor"   : "mod_authors",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "MixinConfigs": "wan_ancient_beasts.mixin.json"
+                "Specification-Title": "${mod_name}",
+                "Specification-Vendor": "Wanmine Studio\"",
+                "Specification-Version": "${mod_version}",
+                "Implementation-Title": project.name,
+                "Implementation-Version": project.jar.archiveVersion,
+                "Implementation-Vendor": "Wanmine Studio\"",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
 }
 
-mixin {
-    add sourceSets.main, "wan_ancient_beasts.refmap.json"
-    config 'wan_ancient_beasts.mixin.json'
-}
-
 jar.finalizedBy('reobfJar')
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact jar
-        }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/mcmodsrepo"
-        }
-    }
-}
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

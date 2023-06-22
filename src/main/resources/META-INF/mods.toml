@@ -1,9 +1,10 @@
 modLoader="javafml"
-loaderVersion="[45,)"
+loaderVersion="[47,)"
 license="All rights reserved"
 [[mods]]
 modId="wan_ancient_beasts"
-version="${file.jarVersion}"
+#TODO: you need to add here the version too, the property won't work if gradle isn't setted up correctly, and it's a pain to do it lol
+version="0.1.1"
 displayName="Wan Ancient Beasts"
 logoFile="wan_ancient_beasts_logo.png"
 credits="Thanks to the Wan Mine community"
@@ -12,7 +13,7 @@ description="Wan Ancient Beasts Mod"
 [[dependencies.wan_ancient_beasts]]
     modId="forge"
     mandatory=true
-    versionRange="[46,)"
+    versionRange="[47,)"
     ordering="NONE"
     side="BOTH"
 
